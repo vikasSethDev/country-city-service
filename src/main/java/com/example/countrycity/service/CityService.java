@@ -6,12 +6,14 @@ import com.example.countrycity.model.City;
 import com.example.countrycity.repository.CityRepository;
 import com.example.countrycity.repository.CountryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -20,40 +22,6 @@ import java.util.List;
 public class CityService {
     private final CityRepository cityRepository;
     private final CountryRepository countryRepository;
-
-
-    public Page<City> getCitiesByCountryId(
-            Long countryId, Pageable pageable) {
-
-        countryRepository.findById(countryId)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Country not found with ID: " + countryId
-                        )
-                );
-
-        List<City> cities = cityRepository.findByCountryId(countryId);
-
-        List<City> paginatedCities = cities.stream()
-                .skip(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .toList();
-
-        return new PageImpl<>(
-                paginatedCities,
-                pageable,
-                cities.size()
-        );
-    }
-
-//    public List<City> getCitiesByCountryId(Long countryId) {
-//        countryRepository.findById(countryId).orElseThrow(() ->
-//                new RuntimeException("Contry not found")
-//        );
-//
-//        return cityRepository.findByCountryId(countryId);
-//
-//    }
 
 
     public City getCityById(Long cityId) {
@@ -65,8 +33,14 @@ public class CityService {
 
 
 
-    public PaginationResponse<City> getCitiesByCountry(
-            Long countryId, int page, int size) {
+    public PaginationResponse<City> getCitiesByCountry(Long countryId, int page, int size) {
+
+        if (page < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page must be >= 0");
+        }
+        if (size < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "size must be >= 1");
+        }
 
         List<City> cities = cityRepository.findByCountryId(countryId);
 
@@ -85,13 +59,7 @@ public class CityService {
 
         int totalPages = (int) Math.ceil((double) totalElements / size);
 
-        return new PaginationResponse<>(
-                content,
-                page,
-                size,
-                totalElements,
-                totalPages
-        );
+        return new PaginationResponse<>(content, page, size, totalElements, totalPages);
     }
 
 
