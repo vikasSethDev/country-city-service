@@ -1,9 +1,8 @@
-package com.example.countrycity.controller;
+package com.example.countrycity.service;
 
 
 import com.example.countrycity.model.Country;
 import com.example.countrycity.repository.CountryRepository;
-import com.example.countrycity.service.CountryService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
